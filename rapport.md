@@ -1,6 +1,7 @@
-# changement du password
-        
-        pasww
+![Oracle Logo](https://upload.wikimedia.org/wikipedia/commons/thumb/5/50/Oracle_logo.svg/663px-Oracle_logo.svg.png)
+
+## Changement du mot de passe linux 
+```bash passwd```
 
 # 2 go to home
 
