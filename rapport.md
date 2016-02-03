@@ -18,6 +18,9 @@ ls -al
 .cshrc : redéfinie l'env pour shell
 .profile : pour bash
 
+
+1. Démarrage de l'instance
+
 # 3 chouf oracle env
 ```
 setenv | grep ORACLE
@@ -47,6 +50,7 @@ Pour ce connecter as root.
  
   startup
   
-
+2. Processus
+  1. Vérifier le fonctionnemetn de votre base en visualisant les processus de votre instance, commentaires sur ces processus détachés.
 
 
