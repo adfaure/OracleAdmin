@@ -138,10 +138,13 @@ SQL> GRANT manager_BDreparti TO INVITE3;
 ```
 
 ##### c- Modifier le mot de passe d'invite2 et lui donner le tablespace users par défaut.
-
 ```
 SQL> ALTER USER invite2 IDENTIFIED BY invite;
 ```
+```
+ALTER USER invite2 IDENTIFIED BY invite2 DEFAULT TABLESPACE users;
+```
+
 ROLE ET PRIVILEGE :
 
 http://oracle.developpez.com/guide/administration/adminrole/
@@ -178,4 +181,51 @@ ORA-01035: ORACLE only available to users with RESTRICTED SESSION privilege
 Pour enlever le mode restreint de la base :
 ```
 SQL> alter system disable restricted session;
+```
+
+## 4. Gestion des ressources
+##### a) Pour l'utilisateur invite1 retrouver ses informations (nom, status, tablespace par défaut, date de création).
+```
+SQL> SELECT * FROM SYS.DBA_USERS WHERE USERNAME = 'INVITE1';
+```
+##### b) Lancer plusieurs sessions sqplus pour vous connecter à la base sous des noms différents. retrouver à partir du dictionnaire des données les utilisateurs connectés (osuser et username), numéro de process (Processus) et le type de programme.
+```
+SELECT
+  username,
+  osuser,
+  terminal
+FROM
+  v$session
+WHERE
+  username IS NOT null
+ORDER BY
+  username,
+  osuser;
+```
+##### c) Un des utilisateurs consomme trop de ressources (sx: invite1), lui annuler sa session en récupérant son SID et serial number.
+Lister les utilisateurs conncetés https://docs.oracle.com/cd/B19306_01/server.102/b14237/dynviews_2088.htm#REFRN30223
+```
+SELECT
+SID, SERIAL#
+FROM
+  v$session
+WHERE
+  username IS NOT null
+  and USERNAME='INVITE1'
+ORDER BY
+  username,
+  osuser;
+```
+Puis pour annuler la session :
+```
+SQL> ALTER SYSTEM KILL SESSION '<SID,SERIAL#>';
+```
+
+##### d) Donner la commande pour verrouiller le compte de l'utilisateur invite1.
+```
+SQL> ALTER USER INVITE1 ACCOUNT LOCK;
+```
+Pour déverrouiller le compte de l'utilisateur invite1 :
+```
+SQL> ALTER USER INVITE1 ACCOUNT UNLOCK;
 ```
