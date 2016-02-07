@@ -39,7 +39,6 @@ Une fois connecté à sqlplus avec les bon droits :
 
 Une description des différents types d'arrêt est disponible à cette adresse : [https://docs.oracle.com/cd/B28359_01/server.111/b28310/start003.htm](https://docs.oracle.com/cd/B28359_01/server.111/b28310/start003.htm)
 
-
 ## 2. Processus
 
 ##### a. Vérifier le fonctionnement de votre base en visualisant les processus de votre instance, commentaires sur ces processus détachés.
@@ -70,7 +69,7 @@ Une fois qu'une commande est lancée dans sqlplus, Oracle prend la main et récu
 
 ## 3. Gestion des utilisateurs
 
-##### a- Création d'utilisateurs :
+##### a- Création d'utilisateurs
 Pour créer les utilisateurs dans la base Oracle :
 ```
 SQL> CREATE USER invite1 IDENTIFIED BY invite1;
@@ -81,7 +80,7 @@ On peut vérifier si les utilisateurs ont bien été créés avec :
 ```
 SQL> SELECT * FROM USER;
 ```
-b- Allocation des privilèges :
+##### b- Allocation des privilèges :
 
 - Donner les droits nécessaires (rôles) aux utilisateurs pour se connecter à la base et créer des objets.
 
@@ -138,7 +137,7 @@ SQL> GRANT CREATE DATABASE LINK, CREATE SYNONYM TO manager_BDreparti;
 SQL> GRANT manager_BDreparti TO INVITE3;
 ```
 
-c- Modifier le mot de passe d'invite2 et lui donner le tablespace users par défaut.
+##### c- Modifier le mot de passe d'invite2 et lui donner le tablespace users par défaut.
 
 ```
 SQL> ALTER USER invite2 IDENTIFIED BY invite;
@@ -151,3 +150,32 @@ https://docs.oracle.com/cd/E21901_01/timesten.1122/e21642/privileges.htm#TTSQL33
 DATABASE STATE :
 
 https://docs.oracle.com/cd/B28359_01/server.111/b28310/start002.htm
+
+http://psoug.org/oraerror/ORA-00750.htm
+Un fois la base dismounted, il faut la redemarrer.
+
+## 4. Modification état de la base
+##### a) Modifier la base pour qu'elle soit en mode maintenance.
+Il faut se connecter en mode /nolog, puis :
+```
+SQL> shutdown abort # Virer toutes les connexions actives
+```
+Il est possible de démarrer la base en mode restreint. Ce dernier va permettre seulement aux utilisateurs titulaires de privilèges particuliers d'accèder à la base (par exemple, les utilisateur avec le rôle DBA).
+```
+SQL> startup restrict
+```
+Pour effectuer des opérations sur la base en tant qu'administrateur :
+```
+SQL> ALTER DATABASE CLOSE;
+SQL> ALTER DATABASE DISMOUNT;
+```
+##### b) Connexion à la base (via sqlplus) avec un des utilisateurs invité, constat ?
+Quand on essaie de se connecter à la base avec un utilisateur ne disposant pas de privilèges suffisants (invite1 par exemple) :
+```
+ORA-01035: ORACLE only available to users with RESTRICTED SESSION privilege
+```
+##### c) Modifier l'état de la base en fonction pour permettre à l'utilisateur invité de se connecter à nouveau.
+Pour enlever le mode restreint de la base :
+```
+SQL> alter system disable restricted session;
+```
