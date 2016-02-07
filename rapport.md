@@ -172,6 +172,9 @@ Pour effectuer des opérations sur la base en tant qu'administrateur :
 SQL> ALTER DATABASE CLOSE;
 SQL> ALTER DATABASE DISMOUNT;
 ```
+http://psoug.org/oraerror/ORA-00750.htm
+Un fois la base dismounted, il faut la redemarrer.
+
 ##### b) Connexion à la base (via sqlplus) avec un des utilisateurs invité, constat ?
 Quand on essaie de se connecter à la base avec un utilisateur ne disposant pas de privilèges suffisants (invite1 par exemple) :
 ```
