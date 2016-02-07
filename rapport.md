@@ -65,3 +65,81 @@ Voici l'abre d'affiliation résultants d'une connexion sqlplus.
         └─ oracleim2ag13 (LOCAL=YES [...])
 
 Une fois qu'une commande est lancée dans sqlplus, Oracle prend la main et récupère la session en forkant le process de session puis execute la rêquete associée. La session utilisateur (processus créé suite à la connexion sqlplus) est peut être considérée comme une session tampon qui permet l'échange de données entre l'utilisateur et Oracle.
+
+##### c. Expliquer le rôles des processus principaux liés à votre base.
+
+## 3. Gestion des utilisateurs
+
+a- Création d'utilisateurs :
+
+Pour créer les utilisateurs dans la base Oracle : 
+
+CREATE USER invite1 IDENTIFIED BY invite1;
+CREATE USER invite2 IDENTIFIED BY invite2;
+CREATE USER invite3 IDENTIFIED BY invite3;
+
+On peut vérifier si les utilisateurs ont bien été créés avec : 
+SELECT * FROM USER;
+
+b- Allocation des privilèges :
+
+- Donner les droits nécessaires (rôles) aux utilisateurs pour se connecter à la base et créer des objets.
+
+Lorsqu'un utilisateur est créé avec l'instruction CREATE USER, il ne dispose encore d'aucun droit car aucun privilège ne lui a encore été assigné. Il ne peut même pas se connecter à la base ! 
+
+Pour qu'un utilisateur puisse se connecter à la base et créer des objets, il est nécéssaire de lui attribuer les privilèges nécessaires :
+
+GRANT CONNECT, RESOURCE TO INVITE1, INVITE2, INVITE3;
+
+- Expliquer ces rôles en retrouvant les privilèges qui leur sont associés.
+
+Les privilèges système assignés au rôle CONNECT :
+
+SQL>  select * from DBA_SYS_PRIVS where grantee='CONNECT';
+
+GRANTEE                        PRIVILEGE                                ADM
+------------------------------ ---------------------------------------- ---
+CONNECT                        CREATE SESSION                           NO
+
+* CREATE SESSION : Elle permet à un utilisateur de créer une connection à la base de données.
+
+Les privilèges système assignés au rôle RESOURCE :
+
+SQL> select * from DBA_SYS_PRIVS where grantee='RESOURCE' ;
+
+GRANTEE                        PRIVILEGE                                ADM
+------------------------------ ---------------------------------------- ---
+RESOURCE                       CREATE TRIGGER                           NO
+RESOURCE                       CREATE SEQUENCE                          NO
+RESOURCE                       CREATE CLUSTER                           NO
+RESOURCE                       CREATE TYPE                              NO
+RESOURCE                       CREATE PROCEDURE                         NO
+RESOURCE                       CREATE TABLE                             NO
+RESOURCE                       CREATE INDEXTYPE                         NO
+RESOURCE                       CREATE OPERATOR                          NO
+
+* CREATE TABLE : Elle permet à un utilisateur de créer une table qui appartiendera à ce dernier.
+
+A noter qu'il possible d'attribuer directement des provilèges à un utilisateur sans passer par les rôles : 
+
+GRANT CREATE SESSION, CREATE TABLE TO INVITE1, INVITE2, INVITE3;
+
+- Création d'un rôle manager_BDreparti avec les droits create synonym et create database link, attribuer ce rôle à invite3.
+
+Lister les privilèges d'un rôle.
+ SELECT * FROM DBA_SYS_PRIVS WHERE GRANTEE ='MANAGER_BDREPARTI';
+
+CREATE ROLE manager_BDreparti;
+GRANT CREATE DATABASE LINK, CREATE SYNONYM TO manager_BDreparti;
+GRANT manager_BDreparti TO INVITE3;
+
+c- Modifier le mot de passe d'invite2 et lui donner le tablespace users par défaut.
+
+ALTER USER invite2 IDENTIFIED BY invite;
+
+ROLE ET PRIVILEGE 
+http://oracle.developpez.com/guide/administration/adminrole/
+https://docs.oracle.com/cd/E21901_01/timesten.1122/e21642/privileges.htm#TTSQL338
+
+DATABASE STATE
+https://docs.oracle.com/cd/B28359_01/server.111/b28310/start002.htm
