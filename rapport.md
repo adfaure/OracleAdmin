@@ -186,7 +186,7 @@ Pour enlever le mode restreint de la base :
 SQL> alter system disable restricted session;
 ```
 
-## 4. Gestion des ressources
+## 5. Gestion des ressources
 ##### a) Pour l'utilisateur invite1 retrouver ses informations (nom, status, tablespace par défaut, date de création).
 ```
 SQL> SELECT * FROM SYS.DBA_USERS WHERE USERNAME = 'INVITE1';
