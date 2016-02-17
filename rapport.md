@@ -232,3 +232,15 @@ Pour déverrouiller le compte de l'utilisateur invite1 :
 ```
 SQL> ALTER USER INVITE1 ACCOUNT UNLOCK;
 ```
+
+## 6. Administration de la base -- dictionnaire des données
+##### a) Dans le dictionnaire des données, retrouver les valeurs des paramètres :
+Paramètre | valeur
+--------- | ---------
+nombre de processus autorisés | 
+taille maximum de la mémoire partagée | 
+valeur par défaut des blocs | 
+nom de la base | 
+tablespace d'annulation | 
+langage utilisé | 
+
