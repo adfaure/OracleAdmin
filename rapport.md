@@ -235,7 +235,7 @@ SQL> ALTER USER INVITE1 ACCOUNT UNLOCK;
 
 ## 6. Administration de la base -- dictionnaire des données
 ##### a) Dans le dictionnaire des données, retrouver les valeurs des paramètres :
-Paramètre | valeur
+Paramètre | Valeur
 --------- | ---------
 nombre de processus autorisés | 
 taille maximum de la mémoire partagée | 
@@ -243,4 +243,13 @@ valeur par défaut des blocs |
 nom de la base | 
 tablespace d'annulation | 
 langage utilisé | 
+##### b) Comparer ces données avec celles du fichier initSID.ora
+
+##### c) Dans le dictionnaire des données, localiser sur votre base où se trouvent les fichiers de données, fichiers de contrôles et fichiers redo-log, vérifier  ces infos sur le système (im2ag-oracle.e.ujf-grenobleµ.fr).
+
+##### d) Pour chaque tablespace de votre base retrouver son nom, son statut, la taille des blocs, l'extent initial et les fichiers associés.
+
+##### e) Modifier en fonctionnement le nombre de process autorisés (=45), faites en sorte que cette modification soit effective immédiatement et au prochain redémarrage.
+
+##### f) Expliquer et illustrer le principe de modication statique et dynamique des paramètres.
 
