@@ -237,6 +237,9 @@ SQL> ALTER USER INVITE1 ACCOUNT UNLOCK;
 
 ## 6. Administration de la base -- dictionnaire des données
 ##### a) Dans le dictionnaire des données, retrouver les valeurs des paramètres :
+```
+SQL> SELECT * FROM $;
+```
 Paramètre | Valeur
 --------- | ---------
 nombre de processus autorisés | 
@@ -255,3 +258,13 @@ langage utilisé |
 
 ##### f) Expliquer et illustrer le principe de modication statique et dynamique des paramètres.
 
+## 6. Tablespaces
+
+##### a) Donner la rêquete visualisant la taille de tous les tablespaces de la base
+##### b) Modification du tablespace users : ajouter 140 Mo au tablespaces users
+
+##### c) Vérifier si votre base est en gestion automatique avec tablespace ou rollback segment, ajouter un tablespace pour les transactions de 50 Mo et l'activer comme tablespace d'annulation par défaut
+
+##### d) Ajouter un tablespace USERS2 de 100 Mo géré en mode dictionnaire
+
+##### e) Ajouter un tablespace USERS3 de 130 Mo, mode de gestion local et avec une taille de bloc de 32 Ko
