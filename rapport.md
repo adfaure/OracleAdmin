@@ -242,12 +242,12 @@ SQL> SELECT * FROM V$PARAMETER WHERE NAME = 'processes' OR NAME = 'shared_pool_s
 ```
 Paramètre | Valeur
 --------- | ---------
-nombre de processus autorisés | 
-taille maximum de la mémoire partagée | 
-valeur par défaut des blocs | 
-nom de la base | 
-tablespace d'annulation | 
-langage utilisé | 
+nombre de processus autorisés | 50
+taille maximum de la mémoire partagée | 0
+valeur par défaut des blocs | 8192
+nom de la base | m2pgi13
+tablespace d'annulation | UNDOTBS1
+langage utilisé | AMERICAN
 ##### b) Comparer ces données avec celles du fichier initSID.ora
 
 ##### c) Dans le dictionnaire des données, localiser sur votre base où se trouvent les fichiers de données, fichiers de contrôles et fichiers redo-log, vérifier  ces infos sur le système (im2ag-oracle.e.ujf-grenobleµ.fr).
