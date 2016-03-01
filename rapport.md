@@ -250,7 +250,28 @@ tablespace d'annulation | UNDOTBS1
 langage utilisé | AMERICAN
 ##### b) Comparer ces données avec celles du fichier initSID.ora
 
-##### c) Dans le dictionnaire des données, localiser sur votre base où se trouvent les fichiers de données, fichiers de contrôles et fichiers redo-log, vérifier  ces infos sur le système (im2ag-oracle.e.ujf-grenobleµ.fr).
+##### c) Dans le dictionnaire des données, localiser sur votre base où se trouvent les fichiers de données, fichiers de contrôles et fichiers redo-log, vérifier  ces infos sur le système (im2ag-oracle.e.ujf-grenoble.fr).
+
+Pour trouver les fichiers de données :
+```
+SQL> SELECT * FROM V$DATAFILE;
+/oracle/TP_ADMIN_ORACLE_M2PGI/m2pgi13/oradata/m2pgi13/system01.dbf
+/oracle/TP_ADMIN_ORACLE_M2PGI/m2pgi13/oradata/m2pgi13/sysaux01.dbf
+/oracle/TP_ADMIN_ORACLE_M2PGI/m2pgi13/oradata/m2pgi13/undotbs01.dbf
+/oracle/TP_ADMIN_ORACLE_M2PGI/m2pgi13/oradata/m2pgi13/users01.dbf
+```
+Pour trouver les fichiers de contrôles :
+```
+SQL> SELECT * FROM V$PARAMETER WHERE NAME = 'control_files';
+/oracle/TP_ADMIN_ORACLE_M2PGI/m2pgi13/oradata/m2pgi13/control01.ctl, /oracle/TP_ADMIN_ORACLE_M2PGI/m2pgi13/flash_recovery_area/m2pgi13/control02.ctl
+```
+Pour trouver les fichiers de redo-log :
+```
+SQL> SELECT * FROM V$LOGFILE;
+/oracle/TP_ADMIN_ORACLE_M2PGI/m2pgi13/oradata/m2pgi13/redo03.log
+/oracle/TP_ADMIN_ORACLE_M2PGI/m2pgi13/oradata/m2pgi13/redo02.log
+/oracle/TP_ADMIN_ORACLE_M2PGI/m2pgi13/oradata/m2pgi13/redo01.log
+```
 
 ##### d) Pour chaque tablespace de votre base retrouver son nom, son statut, la taille des blocs, l'extent initial et les fichiers associés.
 
