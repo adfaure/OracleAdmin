@@ -238,7 +238,13 @@ SQL> ALTER USER INVITE1 ACCOUNT UNLOCK;
 ## 6. Administration de la base -- dictionnaire des données
 ##### a) Dans le dictionnaire des données, retrouver les valeurs des paramètres :
 ```
-SQL> SELECT * FROM $;
+SQL> SELECT * FROM V$PARAMETER WHERE 
+NAME = 'processes' OR 
+NAME = 'shared_pool_size'OR 
+NAME ='db_block_size' OR
+NAME = 'db_name' OR 
+NAME = 'undo_tablespace' OR 
+NAME = 'nls_language';
 ```
 Paramètre | Valeur
 --------- | ---------
