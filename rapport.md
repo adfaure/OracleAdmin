@@ -243,12 +243,24 @@ SQL> SELECT * FROM V$PARAMETER WHERE NAME = 'processes' OR NAME = 'shared_pool_s
 Paramètre | Valeur
 --------- | ---------
 nombre de processus autorisés | 50
-taille maximum de la mémoire partagée | 0
+taille maximum de la mémoire partagée | 1117782016
 valeur par défaut des blocs | 8192
 nom de la base | m2pgi13
 tablespace d'annulation | UNDOTBS1
 langage utilisé | AMERICAN
+
 ##### b) Comparer ces données avec celles du fichier initSID.ora
+Le fichier initSID.ora est le fichier de configuration des paramètres d'initialisation de type text (pfile). Lors du lancement de la base, l'instance Oracle cherchera ce dernier dans le but d'appliques les changements. Il est important de noter que les changements ne seront valides que pour l'instance en cours.
+
+On remarque que la plupart des données qu'on a trouvées dans le dictionnaire des données ont été initialisées à partir du fichier init<SID>.ora.
+
+```
+processes=50
+memory_target=1117782016
+db_block_size=8192
+db_name=m2pgi13
+undo_tablespace=UNDOTBS1
+```
 
 ##### c) Dans le dictionnaire des données, localiser sur votre base où se trouvent les fichiers de données, fichiers de contrôles et fichiers redo-log, vérifier  ces infos sur le système (im2ag-oracle.e.ujf-grenoble.fr).
 
@@ -275,17 +287,84 @@ SQL> SELECT * FROM V$LOGFILE;
 
 ##### d) Pour chaque tablespace de votre base retrouver son nom, son statut, la taille des blocs, l'extent initial et les fichiers associés.
 
+```
+SQL> SELECT TABLESPACE_NAME, STATUS, BLOCKS, AUTOEXTENSIBLE, FILE_NAME FROM DBA_DATA_FILES;
+```
+
 ##### e) Modifier en fonctionnement le nombre de process autorisés (=45), faites en sorte que cette modification soit effective immédiatement et au prochain redémarrage.
 
-##### f) Expliquer et illustrer le principe de modication statique et dynamique des paramètres.
+```
+SQL> ALTER SYSTEM SET processes = 45 scope = both;
+```
 
-## 6. Tablespaces
+'scope = both' indique que le changement est fait à la fois en mémoire (memory) et également dans le fichier de paramètres serveur (spfile).
+
+##### f) Expliquer et illustrer le principe de modication statique et dynamique des paramètres.
+Il existe deux types d'initialisation de paramètres ([source][1]):
+* Des paramètres d'initialisation dynamiques qui peuvent être modifiés pour l'instance de la base de données Oracle en cours. Dans ce cas, ces modifications sont prises en compte immédiatement. Exemple :
+```
+SQL> ALTER SYSTEM SET processes = 45 scope = memory;
+```
+* Des paramètres d'initialisation statiques qui ne peuvent pas être modifiés pour l'instance de la base de données Oracle en cours. Ces changements doivent être réalisés dans le spfile et nécessitent un redémarrage de la base de données pour qu'ils prennent effet. Exemple :
+```
+SQL> ALTER SYSTEM SET processes = 45 scope = spfile;
+```
+
+## 7. Tablespaces
 
 ##### a) Donner la rêquete visualisant la taille de tous les tablespaces de la base
+```
+SQL> SELECT tablespace_name, file_name, round(bytes / 1048576) FROM DBA_DATA_FILES;
+```
 ##### b) Modification du tablespace users : ajouter 140 Mo au tablespaces users
-
+```
+SQL> ALTER DATABASE
+SQL> DATAFILE '/oracle/TP_ADMIN_ORACLE_M2PGI/m2pgi13/oradata/m2pgi13/users01.dbf'
+SQL> RESIZE 200M;
+```
 ##### c) Vérifier si votre base est en gestion automatique avec tablespace ou rollback segment, ajouter un tablespace pour les transactions de 50 Mo et l'activer comme tablespace d'annulation par défaut
+```
+SQL> SELECT * FROM v$PARAMETER WHERE NAME LIKE 'undo_management';
+```
+Dans notre cas il est set à auto au debut. You set the UNDO_MANAGEMENT initialization parameter to AUTO to enable automatic undo management. A default undo tablespace is then created at database creation.
 
+[UNDO_MANAGEMENT][2] specifies which undo space management mode the system should use. When set to AUTO, the instance starts in automatic undo management mode. In manual undo  management mode, undo space is allocated externally as rollback segments.
+
+```
+SQL> CREATE UNDO TABLESPACE TRANSACTIONS50MB
+SQL> DATAFILE 'undotbs.f'
+SQL> SIZE 50M;
+SQL> ALTER SYSTEM SET UNDO_TABLESPACE = undotbs;
+```
 ##### d) Ajouter un tablespace USERS2 de 100 Mo géré en mode dictionnaire
-
+```
+SQL> CREATE TABLESPACE USERS2
+SQL> DATAFILE 'users2.f'
+SQL> SIZE 100M
+SQL> EXTENT MANAGEMENT DICTIONARY
+```
 ##### e) Ajouter un tablespace USERS3 de 130 Mo, mode de gestion local et avec une taille de bloc de 32 Ko
+```
+SQL> CREATE TABLESPACE USERS3
+SQL> DATAFILE 'users3.f'
+SQL> SIZE 130M
+SQL> EXTENT MANAGEMENT LOCAL
+SQL> BLOCKSIZE 32K;
+```
+
+## 9. Surveillance espace stockage d'une table : Visualisation fragmentation dans une table
+##### a) Créer un tablespace dédié en mode LOCAL/AUTOALLOCATE avec un PCTFREE de 30 et un EXTENT INITIAL de 50 k
+```
+SQL> CREATE TABLESPACE GARESTS
+SQL> DATAFILE 'garets.f'
+SQL> PCTFREE 30
+SQL> INITIAL EXTENT 50K
+SQL> EXTENT MANAGEMENT LOCAL AUTOALLOCATE
+```
+##### b) Création d'une table GARES dans ce tablespace :
+```
+SQL> CREATE TABLE GARES (CODE_LIGNE NUMBER (20), NOM VARCHAR2(50), NATURE VARCHAR (70), LATITUDE NUMBER 30, LONGITUDE NUMBER(30));
+```
+
+[1]: http://docs.oracle.com/cd/E18283_01/server.112/e17120/create006.htm#i1010047
+[2]: https://docs.oracle.com/cd/B28359_01/server.111/b28320/initparams250.htm
