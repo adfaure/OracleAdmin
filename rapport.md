@@ -331,39 +331,38 @@ Dans notre cas il est set à auto au debut. You set the UNDO_MANAGEMENT initiali
 [UNDO_MANAGEMENT][2] specifies which undo space management mode the system should use. When set to AUTO, the instance starts in automatic undo management mode. In manual undo  management mode, undo space is allocated externally as rollback segments.
 
 ```
-SQL> CREATE UNDO TABLESPACE TRANSACTIONS50MB
-SQL> DATAFILE 'undotbs.f'
-SQL> SIZE 50M;
-SQL> ALTER SYSTEM SET UNDO_TABLESPACE = undotbs;
+SQL> CREATE UNDO TABLESPACE UNDOTS2 DATAFILE '/oracle/TP_ADMIN_ORACLE_M2PGI/m2pgi13/oradata/m2pgi13/undo_ts.f' SIZE 50M;
+SQL> ALTER SYSTEM SET UNDO_TABLESPACE = UNDOTS2;
 ```
 ##### d) Ajouter un tablespace USERS2 de 100 Mo géré en mode dictionnaire
 ```
-SQL> CREATE TABLESPACE USERS2
-SQL> DATAFILE 'users2.dbf'
-SQL> SIZE 100M
-SQL> EXTENT MANAGEMENT DICTIONARY
+SQL> CREATE TABLESPACE USERS2 DATAFILE '/oracle/TP_ADMIN_ORACLE_M2PGI/m2pgi13/oradata/m2pgi13/users02.dbf' SIZE 100M EXTENT MANAGEMENT DICTIONARY;
 ```
 ##### e) Ajouter un tablespace USERS3 de 130 Mo, mode de gestion local et avec une taille de bloc de 32 Ko
 ```
-SQL> CREATE TABLESPACE USERS3
-SQL> DATAFILE 'users3.dbf'
-SQL> SIZE 130M
-SQL> EXTENT MANAGEMENT LOCAL
-SQL> BLOCKSIZE 32K;
+SQL> ALTER SYSTEM SET db_32k_cache_size=32M SCOPE=BOTH;
+SQL> CREATE TABLESPACE USERS3 DATAFILE '/oracle/TP_ADMIN_ORACLE_M2PGI/m2pgi13/oradata/m2pgi13/users03.dbf' SIZE 128M EXTENT MANAGEMENT LOCAL BLOCKSIZE 32K;
 ```
 
 ## 9. Surveillance espace stockage d'une table : Visualisation fragmentation dans une table
 ##### a) Créer un tablespace dédié en mode LOCAL/AUTOALLOCATE avec un PCTFREE de 30 et un EXTENT INITIAL de 50 k
 ```
-SQL> CREATE TABLESPACE GARES_TS
-SQL> DATAFILE '/oracle/TP_ADMIN_ORACLE_M2PGI/m2pgi13/oradata/m2pgi13/gare_ts.dbf'
-SQL> SIZE 100M
-SQL> EXTENT MANAGEMENT LOCAL AUTOALLOCATE;
+SQL> CREATE TABLESPACE GARES_TS DATAFILE '/oracle/TP_ADMIN_ORACLE_M2PGI/m2pgi13/oradata/m2pgi13/garets.dbf' SIZE 100M EXTENT MANAGEMENT LOCAL AUTOALLOCATE;
 ```
 ##### b) Création d'une table GARES dans ce tablespace :
 ```
-SQL> CREATE TABLE GARES (CODE_LIGNE NUMBER (20), NOM VARCHAR2 (50), NATURE VARCHAR (70), LATITUDE NUMBER 30, LONGITUDE NUMBER(30)) PCTFREE 30 TABLESPACE GARES_TS STORAGE (INITIAL 50K);
+SQL> CREATE TABLE GARES (CODE_LIGNE NUMBER (20), NOM VARCHAR2 (50), NATURE VARCHAR (70), LATITUDE NUMBER (30), LONGITUDE NUMBER(30)) PCTFREE 30 TABLESPACE GARES_TS STORAGE (INITIAL 50K);
 ```
+
+Pour vérifier que la table a bien été créée avec les bons paramètres :
+
+```
+SQL> SELECT OWNER, TABLE_NAME, TABLESPACE_NAME, PCT_FREE, INITIAL_EXTENT FROM DBA_TABLES WHERE TABLE_NAME = 'GARES';
+```
+
+OWNER | TABLE_NAME | TABLESPACE_NAME | PCT_FREE | INITIAL_EXTENT
+------|------------|-----------------|----------|---------------
+SYSTEM|GARES|GARES_TS|30|57344
 
 [1]: http://docs.oracle.com/cd/E18283_01/server.112/e17120/create006.htm#i1010047
 [2]: https://docs.oracle.com/cd/B28359_01/server.111/b28320/initparams250.htm
