@@ -344,6 +344,19 @@ SQL> ALTER SYSTEM SET db_32k_cache_size=32M SCOPE=BOTH;
 SQL> CREATE TABLESPACE USERS3 DATAFILE '/oracle/TP_ADMIN_ORACLE_M2PGI/m2pgi13/oradata/m2pgi13/users03.dbf' SIZE 128M EXTENT MANAGEMENT LOCAL BLOCKSIZE 32K;
 ```
 
+## 8. Sauvegardes
+
+Cette section est un résumé du script backup_database.sh situé à la racine du projet. Les premières ligne du scripts vérifie le fonctionnement de la base.  Si celle ci est n'es pas démarée le script s'arrete.
+Ensuite trois requetes d'éxécute afin d'idetifier les fichiers à sauvegarder.
+* Les fichiers de controles de oracle;
+* Les fichiers de logs pour l'archivage des donnée;
+* Les fichiers de tablespaces.
+
+Une fois les chemins vers les fichiers récupéré le script les copiera dans des dossiers respectifs et redémarera la base de donnée. Un fichier de log est remplie tout au long de la procédure (log_backup situé dans le répértoire depuis lequel on à lancé le script).
+Les données sauvegardées sont situé dans un dossier dans le répértoire depuis lequel on à lancé le script.
+
+De plus le script levera un warning si la base n'est pas en mode d'archivage des données (ARCHIVELOG).
+
 ## 9. Surveillance espace stockage d'une table : Visualisation fragmentation dans une table
 ##### a) Créer un tablespace dédié en mode LOCAL/AUTOALLOCATE avec un PCTFREE de 30 et un EXTENT INITIAL de 50 k
 ```
@@ -364,5 +377,111 @@ OWNER | TABLE_NAME | TABLESPACE_NAME | PCT_FREE | INITIAL_EXTENT
 ------|------------|-----------------|----------|---------------
 SYSTEM|GARES|GARES_TS|30|57344
 
+## 9.1 Scénario "insertions"
+- Insertion de 1000 lignes :
+* À l'aide d'un script, ajouter un millier de n-uplets dans votre table.
+
+```
+cat gares.csv | ./csv2sql.py > insert1000.sql
+```
+
+Ci-dessous le script python "csv2sql.py" qui covertit les données csv en rêquetes SQL:
+
+```python
+#!/usr/bin/python
+
+from string import Template
+import sys
+
+template = Template("INSERT INTO GARES VALUES ('${CODE_LIGNE}', '${NOM}', '${NATURE}', ${LATITUDE}, ${LONGITUDE});")
+for line in sys.stdin:
+    data = line.rstrip().replace('\'', '\'\'').split(";")
+    print template.substitute(CODE_LIGNE=data[0], NOM=data[1], NATURE=data[2], LATITUDE=data[3].replace(',', '.'), LONGITUDE=data[4].replace(',', '.'))
+print "commit;"
+```
+
+* À l'aide des outils statistiques d'Oracle, faire une estimation de la taille de la table GARES pour 15 000 enregistrements et 100 000 enregistrements.
+
+Dans Oracle, la taille d'une table peut grandement changer dépendement des paramètres du tablespace auquel elle appartient (exemple block size). CREATE_TABLE_COST Procedures
+This procedure is used in capacity planning to determine the size of the table given various attributes.
+
+```
+DECLARE
+ ub NUMBER;
+ ab NUMBER;
+ cl sys.create_table_cost_columns;
+BEGIN
+  cl := sys.create_table_cost_columns(
+          sys.create_table_cost_colinfo('NUMBER',20),
+          sys.create_table_cost_colinfo('VARCHAR2',50),
+          sys.create_table_cost_colinfo('VARCHAR',70),
+          sys.create_table_cost_colinfo('NUMBER',30),
+          sys.create_table_cost_colinfo('NUMBER',30)
+        );
+
+  DBMS_SPACE.CREATE_TABLE_COST('GARES_TS',cl,15000,30,ub,ab);
+
+  DBMS_OUTPUT.PUT_LINE('Used Bytes (15K insertions): ' || TO_CHAR(ub/1024/1024) || ' Mb');
+  DBMS_OUTPUT.PUT_LINE('Alloc Bytes (15K insertions): ' || TO_CHAR(ab/1024/1024) || ' Mb');
+
+  DBMS_SPACE.CREATE_TABLE_COST('GARES_TS',cl,100000,30,ub,ab);
+
+  DBMS_OUTPUT.PUT_LINE('Used Bytes (100K insertions): ' || TO_CHAR(ub/1024/1024) || ' Mb');
+  DBMS_OUTPUT.PUT_LINE('Alloc Bytes (100K insertions): ' || TO_CHAR(ab/1024/1024) || ' Mb');
+END;
+```
+
+```
+Used Bytes (15K insertions): 2,34375 Mb
+Alloc Bytes (15K insertions): 3 Mb
+Used Bytes (100K insertions): 15,625 Mb
+Alloc Bytes (100K insertions): 16 Mb
+```
+
+* The used_bytes represent the actual bytes used by the data. This includes the overhead due to the block metadata, pctfree etc.
+
+* The alloc_bytes represent the size of the table when it is created in the tablespace. This takes into account, the size of the extents in the tablespace and tablespace extent management properties.
+
+```bash
+seq 3 | xargs -Inone cat gares.csv | head -15000 | ./csv2sql.py > insert15000
+```
+
+```
+SELECT bytes/1024/1024 FROM DBA_SEGMENTS WHERE SEGMENT_NAME=  'GARES' ORDER BY SEGMENT_NAME;
+```
+
+2 Mb
+
+8 Mb
+
+```python
+#!/usr/bin/python
+
+from string import Template
+import sys
+import random
+import string
+
+update = Template("UPDATE GARES SET NOM='${NOM}' WHERE NOM='${F_NOM}';")
+delete = Template("DELETE GARES WHERE NOM='${NOM}';")
+template = Template("INSERT INTO GARES VALUES ('${CODE_LIGNE}', '${NOM}', '${NATURE}', ${LATITUDE}, ${LONGITUDE});")
+
+for line in sys.stdin:
+    data = line.rstrip().replace('\'', '\'\'').split(";")
+    randomint = random.randint(0,1)
+    if randomint == 0:
+        print delete.substitute(NOM=data[1].replace('\'', '\'\''))
+    elif randomint == 1:
+        pass
+    else :
+        new_name = ''.join(random.choice(string.lowercase) for x in range(random.randint(10, 50)))
+        print update.substitute(NOM=new_name.replace('\'', '\'\''), F_NOM=data[1].replace('\'', '\'\''))
+print "commit;"
+```
+
+
+
+
 [1]: http://docs.oracle.com/cd/E18283_01/server.112/e17120/create006.htm#i1010047
 [2]: https://docs.oracle.com/cd/B28359_01/server.111/b28320/initparams250.htm
+[3]: https://docs.oracle.com/cd/B28359_01/appdev.111/b28419/d_space.htm#i1003180
