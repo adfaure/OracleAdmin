@@ -69,6 +69,18 @@ Une fois qu'une commande est lancée dans sqlplus, Oracle prend la main et récu
 
 ##### c. Expliquer le rôles des processus principaux liés à votre base.
 
+###### Process monitor process(PMON) - ora_pmon_m2pgi13
+ Processus responsable des processus en background. Il se charge de relancer les processus quand ils se sont interonput anormarlement. 
+
+###### System Monitor Process (SMON) - ora_smon_m2pgi13 
+Processus chargé de faire une récupération de la base au demarage si necessaire ainsi que d'autre action de récuperation de transaction ou de liberation de segments pas utilisé.
+
+###### Database Writer Process (DBWn) - ora_dbw0_m2pgi13 
+Processus d'écriture depuis le buffer oracle sur les disques.
+
+###### Log Writer Process (LGWR) - ora_lgwr_m2pgi13
+Processus de management des redo log de l'instance. Necessaire pour l'archivage des données.
+
 ## 3. Gestion des utilisateurs
 
 ##### a- Création d'utilisateurs
@@ -402,7 +414,7 @@ print "commit;"
 
 Dans Oracle, la taille d'une table peut grandement changer dépendement de ses paramètres de stockage (exemple PCTFREE) et aussi des paramètres du tablespace auquel elle appartient (exemple block size). 
 
-On va utiliser la procédure CREATE_TABLE_COST pour estimer la taille de la table sachant sa valeur PCTFREE et ses colonnes (pour retourner la liste des champs d'une table on peut utiliser desc. Exemple : desc GARES).
+On va utiliser la procédure CREATE_TABLE_COST pour estimer la taille de la table sachant sa valeur PCTFREE et ses colonnes.
 
 ```
 DECLARE
@@ -482,7 +494,9 @@ for line in sys.stdin:
 print "commit;"
 ```
 
-PCTFREE est un paramètre de stockage des blocks utilisé pour spécifier la taille à garder libre dans un block pour des futures mises à jour (updates). Si l'on dispose d'une table qui ne subit que des insertions, il est important de laisser PCTFREE à 0, vu que l'on ne veut pas réserver de la place pour les updates.
+PCTFREE est un paramètre de stockage de block utilisé pour spécifier la taille à garder libre dans un block pour des futures mises à jour (updates). Si l'on dispose d'une table qui ne subit que des insertions, il est important de laisser PCTFREE à 0, vu que l'on ne veut pas réserver de la place pour les updates. Cela permet de 
+
+
 
 [1]: http://docs.oracle.com/cd/E18283_01/server.112/e17120/create006.htm#i1010047
 [2]: https://docs.oracle.com/cd/B28359_01/server.111/b28320/initparams250.htm
