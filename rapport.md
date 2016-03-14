@@ -27,7 +27,7 @@ On remarque trois variables globales:
     > sqplus /nolog # Permet de lancer sqlplus sans essayer de se connecter
     > connect /as sysdba # Se connecter en admin pour avoir les bons privilèges
 
-**demarrage :**
+**démarrage :**
 
 Une fois connecté à sqlplus avec les bons droits :
 
@@ -388,7 +388,7 @@ OWNER | TABLE_NAME | TABLESPACE_NAME | PCT_FREE | INITIAL_EXTENT
 SYSTEM|GARES|GARES_TS|30|57344
 
 ## 9.1 Scénario "insertions"
-\- Insertion de 1000 lignes :
+\- **Insertion de 1000 lignes :**
 * À l'aide d'un script, ajouter un millier de n-uplets dans votre table.
 
 ```
@@ -457,17 +457,47 @@ Sachant que :
 
 * *alloc_bytes* représentent la taille de la table lors de sa création dans le tablespace. Cela prend en considération, la taille des extents dans le tablespace et les propriétés de gestion des extents du tablespace.
 
+\- **Ajouter les lignes correspndantes (15k et 100k), puis vérifier vos estimations de manière opérationnelle.**
+
+Commande Linux qui génère 15k insertions :
+
 ```bash
-seq 3 | xargs -Inone cat gares.csv | head -15000 | ./csv2sql.py > insert15000
+seq 3 | xargs -Inone cat gares.csv | head -15000 | ./csv2sql.py > insert15000.sql
 ```
 
+Taille de la table apres 15k insertion :
+
 ```
-SELECT bytes/1024/1024 FROM DBA_SEGMENTS WHERE SEGMENT_NAME=  'GARES' ORDER BY SEGMENT_NAME;
+SELECT bytes/1024/1024 FROM DBA_SEGMENTS WHERE SEGMENT_NAME='GARES';
 ```
 
+Sortie :
 2 Mb
 
+Commande Linux qui génère 100k insertions :
+
+```bash
+seq 20 | xargs -Inone cat gares.csv | head -15000 | ./csv2sql.py > insert15000.sql
+```
+
+Taille de la table apres 100k insertion :
+
+```
+SELECT bytes/1024/1024 FROM DBA_SEGMENTS WHERE SEGMENT_NAME='GARES';
+```
+
+Sortie :
+
 8 Mb
+
+\- **Visualiser les informations de stockage de la table, comme le taux d'occupation moyen des blocks, en utilisant le package DBMS_SPACE.**
+
+\- **Faites un rappel des paramètres de stockage importants utilisés dans cette opération, au niveau du tablespace, segment, extents, blocs.**
+PCTFREE est un paramètre de stockage de block utilisé pour spécifier la taille à garder libre dans un block pour des futures mises à jour (updates). Si l'on dispose d'une table qui ne subit que des insertions, il est important de laisser PCTFREE à 0, vu que l'on ne veut pas réserver de la place pour les updates.
+
+## 9.1 Scénario "modifications"
+
+Ci-dessous le script python qui permet d'effectuer de nombreuses modifications sur la table GARES :
 
 ```python
 #!/usr/bin/python
@@ -493,8 +523,6 @@ for line in sys.stdin:
         print update.substitute(NOM=new_name.replace('\'', '\'\''), F_NOM=data[1].replace('\'', '\'\''))
 print "commit;"
 ```
-
-PCTFREE est un paramètre de stockage de block utilisé pour spécifier la taille à garder libre dans un block pour des futures mises à jour (updates). Si l'on dispose d'une table qui ne subit que des insertions, il est important de laisser PCTFREE à 0, vu que l'on ne veut pas réserver de la place pour les updates.
 
 [1]: http://docs.oracle.com/cd/E18283_01/server.112/e17120/create006.htm#i1010047
 [2]: https://docs.oracle.com/cd/B28359_01/server.111/b28320/initparams250.htm
