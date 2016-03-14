@@ -482,6 +482,7 @@ for line in sys.stdin:
 print "commit;"
 ```
 
+PCTFREE est un paramètre de stockage de block utilisé pour spécifier la taille à garder libre dans un block pour des futures mises à jour (updates). Si l'on dispose d'une table qui ne subit que des insertions, il est important de laisser PCTFREE à 0, vu que l'on ne veut pas réserver de la place pour les updates. Cela permet de 
 
 
 
