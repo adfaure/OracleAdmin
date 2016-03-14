@@ -346,16 +346,14 @@ SQL> CREATE TABLESPACE USERS3 DATAFILE '/oracle/TP_ADMIN_ORACLE_M2PGI/m2pgi13/or
 
 ## 8. Sauvegardes
 
-Cette section est un résumé du script backup_database.sh situé à la racine du projet. Les premières ligne du scripts vérifie le fonctionnement de la base.  Si celle ci est n'es pas démarée le script s'arrete.
-Ensuite trois requetes d'éxécute afin d'idetifier les fichiers à sauvegarder.
-* Les fichiers de controles de oracle;
-* Les fichiers de logs pour l'archivage des donnée;
-* Les fichiers de tablespaces.
+Cette section est un résumé du script backup_database.sh situé à la racine du projet. Les premières lignes du script vérifient le fonctionnement de la base. Si celle-ci n'est pas démarrée le script s'arrête. Ensuite, trois requêtes d'exécute afin d'identifier les fichiers à sauvegarder.
 
-Une fois les chemins vers les fichiers récupéré le script les copiera dans des dossiers respectifs et redémarera la base de donnée. Un fichier de log est remplie tout au long de la procédure (log_backup situé dans le répértoire depuis lequel on à lancé le script).
-Les données sauvegardées sont situé dans un dossier dans le répértoire depuis lequel on à lancé le script.
+* Les fichiers de contrôles de Oracle
+* Les fichiers de logs pour l'archivage des données
+* Les fichiers des tablespaces
 
-De plus le script levera un warning si la base n'est pas en mode d'archivage des données (ARCHIVELOG).
+Une fois les chemins vers les fichiers récupérés, le script les copiera dans des dossiers respectifs et redémarrera la base de données. Un fichier de log est rempli tout au long de la procédure (log_backup situé dans le répertoire depuis lequel on a lancé le script). Les données sauvegardées sont situées dans un dossier dans le répertoire depuis lequel on a lancé le script. 
+De plus, le script lèvera un warning si la base n'est pas en mode d'archivage des données (ARCHIVELOG).
 
 ## 9. Surveillance espace stockage d'une table : Visualisation fragmentation dans une table
 ##### a) Créer un tablespace dédié en mode LOCAL/AUTOALLOCATE avec un PCTFREE de 30 et un EXTENT INITIAL de 50 k
