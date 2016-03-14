@@ -414,7 +414,7 @@ print "commit;"
 
 Dans Oracle, la taille d'une table peut grandement changer dépendement de ses paramètres de stockage (exemple PCTFREE) et aussi des paramètres du tablespace auquel elle appartient (exemple block size). 
 
-On va utiliser la procédure CREATE_TABLE_COST pour estimer la taille de la table sachant sa valeur PCTFREE et ses colonnes.
+On va utiliser la procédure CREATE_TABLE_COST pour estimer la taille de la table sachant sa valeur PCTFREE et ses colonnes (pour retourner la liste des champs d'une table on peut utiliser desc. Exemple : desc GARES).
 
 ```
 DECLARE
@@ -442,7 +442,7 @@ BEGIN
 END;
 ```
 
-Voici la sortie Console :
+Voici la sortie Console (estimation de la taille de la table après 15k et 100k insertions):
 
 ```
 Used Bytes (15K insertions): 2,34375 Mb
@@ -494,9 +494,7 @@ for line in sys.stdin:
 print "commit;"
 ```
 
-PCTFREE est un paramètre de stockage de block utilisé pour spécifier la taille à garder libre dans un block pour des futures mises à jour (updates). Si l'on dispose d'une table qui ne subit que des insertions, il est important de laisser PCTFREE à 0, vu que l'on ne veut pas réserver de la place pour les updates. Cela permet de 
-
-
+PCTFREE est un paramètre de stockage de block utilisé pour spécifier la taille à garder libre dans un block pour des futures mises à jour (updates). Si l'on dispose d'une table qui ne subit que des insertions, il est important de laisser PCTFREE à 0, vu que l'on ne veut pas réserver de la place pour les updates.
 
 [1]: http://docs.oracle.com/cd/E18283_01/server.112/e17120/create006.htm#i1010047
 [2]: https://docs.oracle.com/cd/B28359_01/server.111/b28320/initparams250.htm
