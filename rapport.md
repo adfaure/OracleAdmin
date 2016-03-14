@@ -376,11 +376,11 @@ OWNER | TABLE_NAME | TABLESPACE_NAME | PCT_FREE | INITIAL_EXTENT
 SYSTEM|GARES|GARES_TS|30|57344
 
 ## 9.1 Scénario "insertions"
-- Insertion de 1000 lignes :
+\- Insertion de 1000 lignes :
 * À l'aide d'un script, ajouter un millier de n-uplets dans votre table.
 
 ```
-cat gares.csv | ./csv2sql.py > insert1000.sql
+head -1000 gares.csv | ./csv2sql.py > insert1000.sql
 ```
 
 Ci-dessous le script python "csv2sql.py" qui covertit les données csv en rêquetes SQL:
@@ -400,8 +400,9 @@ print "commit;"
 
 * À l'aide des outils statistiques d'Oracle, faire une estimation de la taille de la table GARES pour 15 000 enregistrements et 100 000 enregistrements.
 
-Dans Oracle, la taille d'une table peut grandement changer dépendement des paramètres du tablespace auquel elle appartient (exemple block size). CREATE_TABLE_COST Procedures
-This procedure is used in capacity planning to determine the size of the table given various attributes.
+Dans Oracle, la taille d'une table peut grandement changer dépendement de ses paramètres de stockage (exemple PCTFREE) et aussi des paramètres du tablespace auquel elle appartient (exemple block size). 
+
+On va utiliser la procédure CREATE_TABLE_COST pour estimer la taille de la table sachant sa valeur PCTFREE et ses colonnes.
 
 ```
 DECLARE
@@ -429,6 +430,8 @@ BEGIN
 END;
 ```
 
+Voici la sortie Console :
+
 ```
 Used Bytes (15K insertions): 2,34375 Mb
 Alloc Bytes (15K insertions): 3 Mb
@@ -436,9 +439,11 @@ Used Bytes (100K insertions): 15,625 Mb
 Alloc Bytes (100K insertions): 16 Mb
 ```
 
-* The used_bytes represent the actual bytes used by the data. This includes the overhead due to the block metadata, pctfree etc.
+Sachant que :
 
-* The alloc_bytes represent the size of the table when it is created in the tablespace. This takes into account, the size of the extents in the tablespace and tablespace extent management properties.
+* *used_bytes* représentent le vrai nombre d'octets utilisés par les données. Cela comprend également les métadonnées des block, pctfree, etc.
+
+* *alloc_bytes* représentent la taille de la table lors de sa création dans le tablespace. Cela prend en considération, la taille des extents dans le tablespace et les propriétés de gestion des extents du tablespace.
 
 ```bash
 seq 3 | xargs -Inone cat gares.csv | head -15000 | ./csv2sql.py > insert15000
