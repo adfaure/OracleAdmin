@@ -558,9 +558,9 @@ SQL> SELECT value FROM v$parameter WHERE name = 'db_block_size';
 ```
 VALUE|
 -----|
-8192|
+8192 |
 
-Donc la taille de la table après 100k insertions de 8M est en effet la taille de block multipliée par le nombre de blocks :
+Donc la taille de la table après 100k insertions de 8M est, en effet, la taille de block multipliée par le nombre de blocks :
 
 1000 * 8K = 8M
 
@@ -591,7 +591,7 @@ for line in sys.stdin:
 print "commit;"
 ```
 
-Refaire une analyse de la table après ces opération :
+Refaire une analyse de la table après ces opérations :
 
 Tout d'abord on affiche le nombre de lignes après les modifications :
 
@@ -660,224 +660,91 @@ En effet, la nouvelle table fraîchement créée à partie d'un export de la tab
 
 ## 9.2 Gestion tablespace LOCAL/UNIFORM
 
-##### a) Créer un tablespace dédié en mode LOCAL/AUTOALLOCATE avec un PCTFREE de 30 et un EXTENT INITIAL de 50 k
+##### a) Création d'un tablespace en mode LOCAL/UNIFORM :
 ```
-SQL> CREATE TABLESPACE GARES_TS DATAFILE '/oracle/TP_ADMIN_ORACLE_M2PGI/m2pgi13/oradata/m2pgi13/garets.dbf' SIZE 100M EXTENT MANAGEMENT LOCAL AUTOALLOCATE;
+SQL> CREATE TABLESPACE GARES_LOCAL_UNIFORM DATAFILE '/oracle/TP_ADMIN_ORACLE_M2PGI/m2pgi13/oradata/m2pgi13/garets_local_uniform.dbf' SIZE 100M EXTENT MANAGEMENT LOCAL UNIFORM;
 ```
 ##### b) Création d'une table GARES dans ce tablespace :
 ```
-SQL> CREATE TABLE GARES (CODE_LIGNE NUMBER (20), NOM VARCHAR2 (50), NATURE VARCHAR (70), LATITUDE NUMBER (30), LONGITUDE NUMBER(30)) PCTFREE 30 TABLESPACE GARES_TS STORAGE (INITIAL 50K);
+SQL> CREATE TABLE GARES_LU (CODE_LIGNE NUMBER (20), NOM VARCHAR2 (50), NATURE VARCHAR (70), LATITUDE NUMBER (30), LONGITUDE NUMBER(30)) PCTFREE 30 TABLESPACE GARES_LOCAL_UNIFORM STORAGE (INITIAL 50K);
 ```
 
-```sql
-     CREATE TABLESPACE GARES_LOCAL_UNIFORM DATAFILE '/oracle/TP_ADMIN_ORACLE_M2PGI/m2pgi13/oradata/m2pgi13/garets_local_uniform.dbf' SIZE 100M EXTENT MANAGEMENT LOCAL UNIFORM;
-     CREATE TABLE GARES_LU (CODE_LIGNE NUMBER (20), NOM VARCHAR2 (50), NATURE VARCHAR (70), LATITUDE NUMBER (30), LONGITUDE NUMBER(30)) PCTFREE 30 TABLESPACE GARES_LOCAL_UNIFORM STORAGE (INITIAL 50K);
-```
-
-Création du table space et de la table.
-# Estimation de la taille:
-```sql
-    DECLARE
-     ub NUMBER;
-     ab NUMBER;
-     cl sys.create_table_cost_columns;
-    BEGIN
-      cl := sys.create_table_cost_columns(
-              sys.create_table_cost_colinfo('NUMBER',20),
-              sys.create_table_cost_colinfo('VARCHAR2',50),
-              sys.create_table_cost_colinfo('VARCHAR',70),
-              sys.create_table_cost_colinfo('NUMBER',30),
-              sys.create_table_cost_colinfo('NUMBER',30)
-            );
-
-      DBMS_SPACE.CREATE_TABLE_COST('GARES_LOCAL_UNIFORM',cl,15000,30,ub,ab);
-
-      DBMS_OUTPUT.PUT_LINE('Used Bytes (15K insertions): ' || TO_CHAR(ub/1024/1024) || ' Mb');
-      DBMS_OUTPUT.PUT_LINE('Alloc Bytes (15K insertions): ' || TO_CHAR(ab/1024/1024) || ' Mb');
-
-      DBMS_SPACE.CREATE_TABLE_COST('GARES_LOCAL_UNIFORM',cl,100000,30,ub,ab);
-
-      DBMS_OUTPUT.PUT_LINE('Used Bytes (100K insertions): ' || TO_CHAR(ub/1024/1024) || ' Mb');
-      DBMS_OUTPUT.PUT_LINE('Alloc Bytes (100K insertions): ' || TO_CHAR(ab/1024/1024) || ' Mb');
-    END;
-```
-#### Sortie console
-```
-Used Bytes (15K insertions): 2,34375 Mb
-Alloc Bytes (15K insertions): 3 Mb
-Used Bytes (100K insertions): 15,625 Mb
-Alloc Bytes (100K insertions): 16 Mb
-```
-# Taille de la table apres 15k insertion
-
-```sql
-select segment_name,segment_type,bytes/1024/1024 MB
- from dba_segments
- where segment_type='TABLE' and segment_name='GARES_LU';
-```
-#### Sortie :
-2MB
-
-
-# Taille de la table apres 100k insertion
-```sql
-select segment_name,segment_type,bytes/1024/1024 MB
- from dba_segments
- where segment_type='TABLE' and segment_name='GARES_LU';
-```
-
-#### Sortie :
-8MB
-
-# Pourcentage utilisé avant delte/update aleatoire
-** Lire ça avant, important : [http://www.toadworld.com/platforms/oracle/w/wiki/3281.dbms-space-space-usage](http://www.toadworld.com/platforms/oracle/w/wiki/3281.dbms-space-space-usage)**
-```sql
-variable unf number;
-variable unfb number;
-variable fs1 number;
-variable fs1b number;
-variable fs2 number;
-variable fs2b number;
-variable fs3 number;
-variable fs3b number;
-variable fs4 number;
-variable fs4b number;
-variable full number;
-variable fullb number;
-
-begin
-dbms_space.space_usage('SYSTEM','GARES_LU',
-                        'TABLE',
-                        :unf, :unfb,
-                        :fs1, :fs1b,
-                        :fs2, :fs2b,
-                        :fs3, :fs3b,
-                        :fs4, :fs4b,
-                        :full, :fullb);
-end;
-/
-print unf ;
-print unfb ;
-print fs4 ;
-print fs4b;
-print fs3 ;
-print fs3b;
-print fs2 ;
-print fs2b;
-print fs1 ;
-print fs1b;
-print full;
-print fullb;
-```
-
-#### Sortie console
-```
-
-       UNF
-----------
-        30
-
-      UNFB
-----------
-    245760
-
-       FS4
-----------
-        28
-
-      FS4B
-----------
-    229376
-
-       FS3
-----------
-         0
-
-      FS3B
-----------
-         0
-
-       FS2
-----------
-         0
-
-      FS2B
-----------
-         0
-
-       FS1
-----------
-         0
-
-      FS1B
-----------
-         0
-
-      FULL
-----------
-       948
-
-     FULLB
-----------
-   7766016
-```
-
-# Observation de Gares_LU apres insertion/delte aléatoire  sur 100K
-
-taille de la table : toujours 8MB
-
-#### %age utilisé
-```
-
-       UNF
-----------
-        30
-
-      UNFB
-----------
-    245760
-
-       FS4
-----------
-        28
-
-      FS4B
-----------
-    229376
-
-       FS3
-----------
-       899
-
-      FS3B
-----------
-   7364608
-
-       FS2
-----------
-         0
-
-      FS2B
-----------
-         0
-
-       FS1
-----------
-         0
-
-      FS1B
-----------
-         0
-
-      FULL
-----------
-        49
-
-     FULLB
-----------
-    401408
+Pour vérifier que la table a bien été créée avec les bons paramètres :
 
 ```
+SQL> SELECT OWNER, TABLE_NAME, TABLESPACE_NAME, PCT_FREE, INITIAL_EXTENT FROM DBA_TABLES WHERE TABLE_NAME = 'GARES_LU';
+```
+
+OWNER | TABLE_NAME | TABLESPACE_NAME | PCT_FREE | INITIAL_EXTENT
+------|------------|-----------------|----------|---------------
+SYSTEM|GARES_LU|GARES_LOCAL_UNIFORM|30|57344
+
+## Scénario "insertions"
+
+Taille de la table après 15k insertions :
+
+```
+SELECT bytes/1024/1024 FROM DBA_SEGMENTS WHERE SEGMENT_NAME='GARES_LU';
+```
+
+Sortie :
+
+VALUE|
+-----|
+2 Mb |
+
+Taille de la table après 100k insertions :
+
+```
+SELECT bytes/1024/1024 FROM DBA_SEGMENTS WHERE SEGMENT_NAME='GARES_LU';
+```
+
+Sortie :
+
+VALUE|
+-----|
+8 Mb |
+
+\- **Visualiser les informations de stockage de la table, comme le taux d'occupation moyen des blocks, en utilisant le package DBMS_SPACE.**
+
+Sortie de la requête 'dbms\_space.space\_usage' :
+
+UNF  | UNFB | FS4 | FS4B | FS3 | FS3B  | FS2 | FS2B | FS1 | FS1B | FULL | FULLB 
+-----|------|-----|------|-----|-------|-----|------|-----|------|------|------
+30   |245760|27   |221184|1    |8192   |0    |0     |0    |0     |948   |7766016
+
+## 9.1 Scénario "modifications"
+
+On utilise ici les mêmes requêtes générées avec le script Python en changeant tout simplement le nom de la table. Pour afficher le nombre de lignes après les modifications :
+
+```
+SQL> SELECT COUNT(*) FROM GARES_LU; 
+```
+Sortie : 
+
+VALUE|
+-----|
+51593|
+
+Sortie de la requête dbms\_space.space\_usage :
+
+UNF    | UNFB     | FS4  | FS4B     | FS3     | FS3B      | FS2   | FS2B      | FS1 | FS1B | FULL  | FULLB 
+-------|----------|------|----------|---------|-----------|-------|-----------|-----|------|-------|------
+**30** |**245760**|**28**|**229376**|**572**  |**4685824**|**176**|**1441792**|0    |0     |**200**|**1638400**
+
+Taille de la table après les modifications :
+
+```
+SQL> SELECT bytes/1024/1024 FROM DBA_SEGMENTS WHERE SEGMENT_NAME='GARES_LU';
+```
+
+Sortie :
+
+VALUE|
+-----|
+8 Mb |
+
+## Conclusion :
 
 
 [1]: http://docs.oracle.com/cd/E18283_01/server.112/e17120/create006.htm#i1010047
