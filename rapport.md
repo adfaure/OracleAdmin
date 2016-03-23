@@ -465,7 +465,7 @@ Commande Linux qui génère 15k insertions :
 seq 3 | xargs -Inone cat gares.csv | head -15000 | ./csv2sql.py > insert15000.sql
 ```
 
-Taille de la table apres 15k insertion :
+Taille de la table après 15k insertions :
 
 ```
 SELECT bytes/1024/1024 FROM DBA_SEGMENTS WHERE SEGMENT_NAME='GARES';
@@ -480,7 +480,7 @@ Commande Linux qui génère 100k insertions :
 seq 20 | xargs -Inone cat gares.csv | head -15000 | ./csv2sql.py > insert15000.sql
 ```
 
-Taille de la table apres 100k insertion :
+Taille de la table après 100k insertions :
 
 ```
 SELECT bytes/1024/1024 FROM DBA_SEGMENTS WHERE SEGMENT_NAME='GARES';
@@ -492,7 +492,57 @@ Sortie :
 
 \- **Visualiser les informations de stockage de la table, comme le taux d'occupation moyen des blocks, en utilisant le package DBMS_SPACE.**
 
+Ci-dessous la [requête][4] pour afficher les informations de stockage de la table :
+
+```
+SELECT * FROM V$PARAMETERS;
+
+variable unf number;
+variable unfb number;
+variable fs1 number; -- Number of blocks having at least 0 to 25% free space 
+variable fs1b number;
+variable fs2 number; -- Number of blocks having at least 25 to 50% free space
+variable fs2b number;
+variable fs3 number; -- Number of blocks having at least 50 to 75% free space     
+variable fs3b number;
+variable fs4 number; -- Number of blocks having at least 75 to 100% free space 
+variable fs4b number;
+variable full number; -- Total number of blocks full in the segment
+variable fullb number;
+
+begin
+dbms_space.space_usage('SYSTEM','GARES',
+                        'TABLE',
+                        :unf, :unfb,
+                        :fs1, :fs1b,
+                        :fs2, :fs2b,
+                        :fs3, :fs3b,
+                        :fs4, :fs4b,
+                        :full, :fullb);
+end;
+/
+print unf ;
+print unfb ;
+print fs4 ;
+print fs4b;
+print fs3 ;
+print fs3b;
+print fs2 ;
+print fs2b;
+print fs1 ;
+print fs1b;
+print full;
+print fullb;
+```
+
+Sortie :
+
+UNF | UNFB | FS4 | FS4B | FS3 | FS3B  | FS2 | FS2B | FS1 | FS1B | FULL | FULLB 
+----|------|-----|------|-----|-------|-----|------|-----|------|------|------
+0   |0     |52   |425984|894  |7323648|0    |0     |0    |0     |54    |442368
+
 \- **Faites un rappel des paramètres de stockage importants utilisés dans cette opération, au niveau du tablespace, segment, extents, blocs.**
+
 PCTFREE est un paramètre de stockage de block utilisé pour spécifier la taille à garder libre dans un block pour des futures mises à jour (updates). Si l'on dispose d'une table qui ne subit que des insertions, il est important de laisser PCTFREE à 0, vu que l'on ne veut pas réserver de la place pour les updates.
 
 ## 9.1 Scénario "modifications"
@@ -527,3 +577,4 @@ print "commit;"
 [1]: http://docs.oracle.com/cd/E18283_01/server.112/e17120/create006.htm#i1010047
 [2]: https://docs.oracle.com/cd/B28359_01/server.111/b28320/initparams250.htm
 [3]: https://docs.oracle.com/cd/B28359_01/appdev.111/b28419/d_space.htm#i1003180
+[4]: http://www.toadworld.com/platforms/oracle/w/wiki/3281.dbms-space-space-usage
