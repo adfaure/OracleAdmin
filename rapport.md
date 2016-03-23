@@ -542,12 +542,12 @@ UNF | UNFB | FS4 | FS4B | FS3 | FS3B  | FS2 | FS2B | FS1 | FS1B | FULL | FULLB
 Pour avoir plus de détails, on peut visualiser des informations relatives à la table à partir de la vue 'DBA_TABLES':
 
 ```
-SQL> SELECT NUM_ROWS, BLOCKS, EMPTY_BLOCKS, AVG_SPACE, AVG_ROW_LEN FROM DBA_TABLES WHERE TABLE_NAME = 'GARES';
+SQL> SELECT BLOCKS, EMPTY_BLOCKS, AVG_SPACE, AVG_ROW_LEN FROM DBA_TABLES WHERE TABLE_NAME = 'GARES';
 ```
 
-NUM_ROWS | BLOCKS | EMPTY_BLOCKS | AVG_SPACE | AVG_ROW_LEN
-----|------|-----|------|-----
-100000 | 1000 | 24 | 4815 | 49
+BLOCKS | EMPTY_BLOCKS | AVG_SPACE | AVG_ROW_LEN
+------|-----|------|-----
+1000 | 24 | 4815 | 49
 
 On constate que le nombre total des blocks alloués à la table GARES est 1000 dont la plupart ont entre 50% et 75% d'espaces libres (FS3).
 
@@ -600,23 +600,51 @@ print "commit;"
 
 Refaire une analyse de la table après ces opération :
 
+Tout d'abord on affiche le nombre de lignes après les modifications :
+
+```
+SQL> SELECT COUNT(*) FROM GARES; 
+```
+Sortie : 
+
+VALUE|
+-----|
+51593|
+
+Donc notre script, mis à part les updates, à effectuer environ 50% de deletes.
+
 Sortie de la requête dbms\_space.space\_usage :
 
-UNF | UNFB | FS4 | FS4B | FS3 | FS3B  | FS2 | FS2B | FS1 | FS1B | FULL | FULLB 
-----|------|-----|------|-----|-------|-----|------|-----|------|------|------
-0   |0     |52   |425984|894  |7323648|0    |0     |0    |0     |54    |442368
+UNF | UNFB | FS4 | FS4B | FS3     | FS3B      | FS2   | FS2B      | FS1 | FS1B | FULL  | FULLB 
+----|------|-----|------|---------|-----------|-------|-----------|-----|------|-------|------
+0   |0     |52   |425984|**574**  |**4702208**|**181**|**1482752**|0    |0     |**193**|**1581056**
 
-Informations depuis 'DBA_TABLES' :
+Autres informations :
 
 ```
-SQL> SELECT NUM_ROWS, BLOCKS, EMPTY_BLOCKS, AVG_SPACE, AVG_ROW_LEN FROM DBA_TABLES WHERE TABLE_NAME = 'GARES';
+SQL> SELECT BLOCKS, EMPTY_BLOCKS, AVG_SPACE, AVG_ROW_LEN FROM DBA_TABLES WHERE TABLE_NAME = 'GARES';
 ```
 
-NUM_ROWS | BLOCKS | EMPTY_BLOCKS | AVG_SPACE | AVG_ROW_LEN
-----|------|-----|------|-----
-100000 | 1000 | 24 | 4815 | 49
+BLOCKS | EMPTY_BLOCKS | AVG_SPACE | AVG_ROW_LEN
+------|-----|------|-----
+1000 | 24 | 4815 | 49
 
-On constate que le nombre total des blocks alloués à la table GARES est 1000 dont la plupart ont entre 50% et 75% d'espaces libres (FS3).
+Taille de la table après les modifications :
+
+```
+SELECT bytes/1024/1024 FROM DBA_SEGMENTS WHERE SEGMENT_NAME='GARES';
+```
+
+Sortie :
+
+8 Mb
+
+On constate que :
+
+* La taille de la table n'a pas diminué même si l'on a supprimé la moitié des lignes.
+* Le nombre de block entièrement remplis a augmenté après les updates.
+
+
 
 [1]: http://docs.oracle.com/cd/E18283_01/server.112/e17120/create006.htm#i1010047
 [2]: https://docs.oracle.com/cd/B28359_01/server.111/b28320/initparams250.htm
