@@ -47,7 +47,7 @@ Dans le but d'afficher tous les processus vis-à-vis de notre instance Oracle, o
 
     > ps -ef | grep oracle | grep m2pgi13
 
-![Process Oracle](process.png)
+![Process Oracle](http://i.imgur.com/FREsX2X.png)
 
 Les processus détachés Oracle permettent d'éxecuter des requêtes en tant que service.
 Lors du démarrage, Oracle lance ses processus rattaché au processus init (ID : 1) du système d'exploitation. Cela permet de les détacher de la fênetre principal et ainsi les rendre complètement autonome. De plus il est necessaire de disposer de certain privilèges afin de tuer ces processus (voir Section 1).
