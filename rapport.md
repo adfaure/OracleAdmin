@@ -472,7 +472,10 @@ SELECT bytes/1024/1024 FROM DBA_SEGMENTS WHERE SEGMENT_NAME='GARES';
 ```
 
 Sortie :
-2 Mb
+
+VALUE|
+-----|
+2 Mb |
 
 Commande Linux qui génère 100k insertions :
 
@@ -488,7 +491,9 @@ SELECT bytes/1024/1024 FROM DBA_SEGMENTS WHERE SEGMENT_NAME='GARES';
 
 Sortie :
 
-8 Mb
+VALUE|
+-----|
+8 Mb |
 
 \- **Visualiser les informations de stockage de la table, comme le taux d'occupation moyen des blocks, en utilisant le package DBMS_SPACE.**
 
@@ -615,7 +620,9 @@ SELECT bytes/1024/1024 FROM DBA_SEGMENTS WHERE SEGMENT_NAME='GARES';
 
 Sortie :
 
-8 Mb
+VALUE|
+-----|
+8 Mb |
 
 On constate que :
 
@@ -645,9 +652,13 @@ SELECT bytes/1024/1024 FROM DBA_SEGMENTS WHERE SEGMENT_NAME='GARES_EXPORT_IMPORT
 
 Sortie :
 
-6 Mb
+VALUE|
+-----|
+6 Mb |
 
 En effet, la nouvelle table fraîchement créée à partie d'un export de la table GARES est 25% plus petite en taille avec seulement 748 blocks utilisés (48 + 51 + 1 + 648). Par contre, 65% des blocks sont entièrement remplis même avec une valeur PCTFREE de 30%.
+
+## 9.1 Scénario "insertions"
 
 [1]: http://docs.oracle.com/cd/E18283_01/server.112/e17120/create006.htm#i1010047
 [2]: https://docs.oracle.com/cd/B28359_01/server.111/b28320/initparams250.htm
