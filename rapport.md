@@ -1,7 +1,5 @@
 ![Oracle Logo](https://upload.wikimedia.org/wikipedia/commons/thumb/5/50/Oracle_logo.svg/663px-Oracle_logo.svg.png)
 
-[M2PGI_TP_ORACLE] nom_nom.pdf
-
 ## 1. Démarrage de l'instance
 
 ##### a. Vérifier vos variables d'environnement liées à Oracle, expliquer leurs rôles brièvement.
@@ -19,7 +17,7 @@ On remarque trois variables globales:
 * ORACLE_HOME : Le répertoire home dans lequel un produit ou une base de données Oracle sont installés.
 * ORACLE_SID : Utilisé pour identifier une instance/base oracle. Il doit être unique pour chaques instances.
 
-##### b. Valider les procéduresde démarrage et d'arrêt de votre instance oracle.
+##### b. Valider les procédures de démarrage et d'arrêt de votre instance oracle.
 ##### c. Expliquer les bonnes pratiques à utiliser pour les comptes SYS et SYSTEM.
 
 **connexion en admin :**
@@ -156,20 +154,18 @@ SQL> GRANT manager_BDreparti TO INVITE3;
 SQL> ALTER USER invite2 IDENTIFIED BY invite;
 ```
 ```
-ALTER USER invite2 IDENTIFIED BY invite2 DEFAULT TABLESPACE users;
+SQL> ALTER USER invite2 IDENTIFIED BY invite2 DEFAULT TABLESPACE users;
 ```
 
 ROLE ET PRIVILEGE :
-
 http://oracle.developpez.com/guide/administration/adminrole/
 https://docs.oracle.com/cd/E21901_01/timesten.1122/e21642/privileges.htm#TTSQL338
 
 DATABASE STATE :
-
 https://docs.oracle.com/cd/B28359_01/server.111/b28310/start002.htm
-
 http://psoug.org/oraerror/ORA-00750.htm
-Un fois la base dismounted, il faut la redemarrer.
+
+INFO: Un fois la base dismounted, il faut la redemarrer.
 
 ## 4. Modification état de la base
 ##### a) Modifier la base pour qu'elle soit en mode maintenance.
@@ -632,7 +628,12 @@ On constate que :
 
 Proposer, en les expliquant, des scénarios d'améliorations de l'espace de stockage de la table GARES :
 
-....
+Trois scénarios sont envisageables : 
+* L'application effectue beaucoup d'insertions qui augmentent la taille des lignes. Dans ce cas, on préfèrera un PCTFREE élévé ainsi qu'un PCTUSED bas. Ainsi, lors d'une forte activité de mise à jour, on réduit le temps de calcul.
+
+* L'application effectue beaucoup d'insertions et de deletes et les opérations de mises à jour n'augmentent pas la taille des données. Dans ce cas, on favorise un PCTFREE très bas (~5%) et un PCTUSED haut (~60%). Ainsi, on optimise l'espace de stockage et l'espace non utilisé est réutilisé très vite.
+
+* La table sert de stockage et comporte énormément de données. Les opérations d'écritures sont très rares, voire inexistantes. Dans cette situation on favorise un PCTFREE très bas, car on veut maximiser la taille utilisée.
 
 Faire un export/import de la table vers une nouvelle table, refaire l'analyse de cette table pour voir les améliorations :
 
