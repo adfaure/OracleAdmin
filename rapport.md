@@ -495,8 +495,6 @@ Sortie :
 Ci-dessous la [requête][4] pour afficher les informations de stockage de la table :
 
 ```
-SELECT * FROM V$PARAMETERS;
-
 variable unf number;
 variable unfb number;
 variable fs1 number; -- Number of blocks having at least 0 to 25% free space 
@@ -541,9 +539,11 @@ UNF | UNFB | FS4 | FS4B | FS3 | FS3B  | FS2 | FS2B | FS1 | FS1B | FULL | FULLB
 ----|------|-----|------|-----|-------|-----|------|-----|------|------|------
 0   |0     |52   |425984|894  |7323648|0    |0     |0    |0     |54    |442368
 
+On constate que la plupart des blocks alloués à la table GARES ont entre 50% et 75% d'espace libre (FS3).
+
 \- **Faites un rappel des paramètres de stockage importants utilisés dans cette opération, au niveau du tablespace, segment, extents, blocs.**
 
-PCTFREE est un paramètre de stockage de block utilisé pour spécifier la taille à garder libre dans un block pour des futures mises à jour (updates). Si l'on dispose d'une table qui ne subit que des insertions, il est important de laisser PCTFREE à 0, vu que l'on ne veut pas réserver de la place pour les updates.
+PCTFREE est un paramètre de stockage de block utilisé pour spécifier la taille à garder libre dans un block pour des futures mises à jour (updates). Par exemple, avec PCTFREE égale à 30, Oracle rajoutera, au fur et à mesure, des nouvelles lignes à un block jusqu'à ce qu'il sera 70% rempli. En revanche, si l'on dispose d'une table qui ne subit que des insertions, il est important de laisser PCTFREE à 0, vu que l'on ne veut pas réserver de la place pour les updates.
 
 ## 9.1 Scénario "modifications"
 
