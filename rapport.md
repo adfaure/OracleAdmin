@@ -540,7 +540,7 @@ UNF | UNFB | FS4 | FS4B | FS3 | FS3B  | FS2 | FS2B | FS1 | FS1B | FULL | FULLB
 ----|------|-----|------|-----|-------|-----|------|-----|------|------|------
 0   |0     |52   |425984|894  |7323648|0    |0     |0    |0     |54    |442368
 
-On constate que le nombre total des blocks alloués à la table GARES est 1000 (52 + 894 + 54) dont la plupart ont entre 50% et 75% d'espaces libres (FS3). On remarque également que même si l'on a bien urilisé une valeur de 30% pour PCTFREE, 54 blocks sont entièrement remplis. 
+On constate que le nombre total des blocks alloués à la table GARES est 1000 (BLOCKS dans DBA_TABLES) dont la plupart ont entre 50% et 75% d'espaces libres (FS3). On remarque également que même si l'on a bien urilisé une valeur de 30% pour PCTFREE, 54 blocks sont entièrement remplis. 
 
 \- **Faites un rappel des paramètres de stockage importants utilisés dans cette opération, au niveau du tablespace, segment, extents, blocs.**
 
@@ -657,13 +657,13 @@ VALUE|
 -----|
 6 Mb |
 
-En effet, la nouvelle table fraîchement créée à partie d'un export de la table GARES est 25% plus petite en taille avec seulement 748 blocks utilisés (48 + 51 + 1 + 648). Par contre, 65% des blocks sont entièrement remplis même avec une valeur PCTFREE de 30%.
+En effet, la nouvelle table fraîchement créée à partie d'un export de la table GARES est 25% plus petite en taille avec seulement 748 blocks utilisés. Par contre, 65% des blocks sont entièrement remplis même avec une valeur PCTFREE de 30%.
 
 ## 9.2 Gestion tablespace LOCAL/UNIFORM
 
 ##### a) Création d'un tablespace en mode LOCAL/UNIFORM :
 ```
-SQL> CREATE TABLESPACE GARES_LOCAL_UNIFORM DATAFILE '/oracle/TP_ADMIN_ORACLE_M2PGI/m2pgi13/oradata/m2pgi13/garets_local_uniform.dbf' SIZE 100M EXTENT MANAGEMENT LOCAL UNIFORM;
+SQL> CREATE TABLESPACE GARES_LOCAL_UNIFORM DATAFILE '/oracle/TP_ADMIN_ORACLE_M2PGI/m2pgi13/oradata/m2pgi13/garets_local_uniform.dbf' SIZE 100M EXTENT MANAGEMENT LOCAL UNIFORM SIZE 512K;
 ```
 ##### b) Création d'une table GARES dans ce tablespace :
 ```
@@ -712,7 +712,7 @@ Sortie de la requête 'dbms\_space.space\_usage' :
 
 UNF  | UNFB | FS4 | FS4B | FS3 | FS3B  | FS2 | FS2B | FS1 | FS1B | FULL | FULLB 
 -----|------|-----|------|-----|-------|-----|------|-----|------|------|------
-30   |245760|27   |221184|1    |8192   |0    |0     |0    |0     |948   |7766016
+15   |122880|40   |327680|0    |0      |0    |0     |0    |0     |948   |7766016
 
 ## 9.1 Scénario "modifications"
 
@@ -731,7 +731,7 @@ Sortie de la requête dbms\_space.space\_usage :
 
 UNF    | UNFB     | FS4  | FS4B     | FS3     | FS3B      | FS2   | FS2B      | FS1 | FS1B | FULL  | FULLB 
 -------|----------|------|----------|---------|-----------|-------|-----------|-----|------|-------|------
-**30** |**245760**|**28**|**229376**|**572**  |**4685824**|**176**|**1441792**|0    |0     |**200**|**1638400**
+**15** |**122880**|**40**|**327680**|**580**  |**4751360**|**178**|**1458176**|0    |0     |**190**|**1556480**
 
 Taille de la table après les modifications :
 
