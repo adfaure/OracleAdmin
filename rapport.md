@@ -539,17 +539,7 @@ UNF | UNFB | FS4 | FS4B | FS3 | FS3B  | FS2 | FS2B | FS1 | FS1B | FULL | FULLB
 ----|------|-----|------|-----|-------|-----|------|-----|------|------|------
 0   |0     |52   |425984|894  |7323648|0    |0     |0    |0     |54    |442368
 
-Pour avoir plus de détails, on peut visualiser des informations relatives à la table à partir de la vue 'DBA_TABLES':
-
-```
-SQL> SELECT BLOCKS, EMPTY_BLOCKS, AVG_SPACE, AVG_ROW_LEN FROM DBA_TABLES WHERE TABLE_NAME = 'GARES';
-```
-
-BLOCKS | EMPTY_BLOCKS | AVG_SPACE | AVG_ROW_LEN
-------|-----|------|-----
-1000 | 24 | 4815 | 49
-
-On constate que le nombre total des blocks alloués à la table GARES est 1000 dont la plupart ont entre 50% et 75% d'espaces libres (FS3).
+On constate que le nombre total des blocks alloués à la table GARES est 1000 (52 + 894 + 54) dont la plupart ont entre 50% et 75% d'espaces libres (FS3).
 
 \- **Faites un rappel des paramètres de stockage importants utilisés dans cette opération, au niveau du tablespace, segment, extents, blocs.**
 
@@ -590,8 +580,6 @@ for line in sys.stdin:
     randomint = random.randint(0,1)
     if randomint == 0:
         print delete.substitute(NOM=data[1].replace('\'', '\'\''))
-    elif randomint == 1:
-        pass
     else :
         new_name = ''.join(random.choice(string.lowercase) for x in range(random.randint(10, 50)))
         print update.substitute(NOM=new_name.replace('\'', '\'\''), F_NOM=data[1].replace('\'', '\'\''))
@@ -619,16 +607,6 @@ UNF | UNFB | FS4 | FS4B | FS3     | FS3B      | FS2   | FS2B      | FS1 | FS1B |
 ----|------|-----|------|---------|-----------|-------|-----------|-----|------|-------|------
 0   |0     |52   |425984|**574**  |**4702208**|**181**|**1482752**|0    |0     |**193**|**1581056**
 
-Autres informations :
-
-```
-SQL> SELECT BLOCKS, EMPTY_BLOCKS, AVG_SPACE, AVG_ROW_LEN FROM DBA_TABLES WHERE TABLE_NAME = 'GARES';
-```
-
-BLOCKS | EMPTY_BLOCKS | AVG_SPACE | AVG_ROW_LEN
-------|-----|------|-----
-1000 | 24 | 4815 | 49
-
 Taille de la table après les modifications :
 
 ```
@@ -642,7 +620,13 @@ Sortie :
 On constate que :
 
 * La taille de la table n'a pas diminué même si l'on a supprimé la moitié des lignes.
-* Le nombre de block entièrement remplis a augmenté après les updates.
+* Le nombre de blocks entièrement remplis a augmenté après les updates suite à l'exploitation de l'espace libre que l'on a gardé grâce à l'utilisation de PCTFREE.
+
+Proposer, el les expliquant, des scénarios d'am&liorations de l'espace de stockage de la table GARES :
+
+....
+
+Faire un export/import de la table vers une nouvelle table, refaire l'analyse de cette table pour voir les améliorations :
 
 
 
