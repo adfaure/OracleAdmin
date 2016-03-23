@@ -539,11 +539,35 @@ UNF | UNFB | FS4 | FS4B | FS3 | FS3B  | FS2 | FS2B | FS1 | FS1B | FULL | FULLB
 ----|------|-----|------|-----|-------|-----|------|-----|------|------|------
 0   |0     |52   |425984|894  |7323648|0    |0     |0    |0     |54    |442368
 
-On constate que la plupart des blocks alloués à la table GARES ont entre 50% et 75% d'espace libre (FS3).
+Pour avoir plus de détails, on peut visualiser des informations relatives à la table à partir de la vue 'DBA_TABLES':
+
+```
+SQL> SELECT NUM_ROWS, BLOCKS, EMPTY_BLOCKS, AVG_SPACE, AVG_ROW_LEN FROM DBA_TABLES WHERE TABLE_NAME = 'GARES';
+```
+
+NUM_ROWS | BLOCKS | EMPTY_BLOCKS | AVG_SPACE | AVG_ROW_LEN
+----|------|-----|------|-----
+100000 | 1000 | 24 | 4815 | 49
+
+On constate que le nombre total des blocks alloués à la table GARES est 1000 dont la plupart ont entre 50% et 75% d'espaces libres (FS3).
 
 \- **Faites un rappel des paramètres de stockage importants utilisés dans cette opération, au niveau du tablespace, segment, extents, blocs.**
 
-PCTFREE est un paramètre de stockage de block utilisé pour spécifier la taille à garder libre dans un block pour des futures mises à jour (updates). Par exemple, avec PCTFREE égale à 30, Oracle rajoutera, au fur et à mesure, des nouvelles lignes à un block jusqu'à ce qu'il sera 70% rempli. En revanche, si l'on dispose d'une table qui ne subit que des insertions, il est important de laisser PCTFREE à 0, vu que l'on ne veut pas réserver de la place pour les updates.
+PCTFREE est un paramètre de stockage de block utilisé pour spécifier la taille à garder libre dans un block pour des futures mises à jour (updates). Par exemple, avec PCTFREE égale à 30, Oracle rajoutera, au fur et à mesure, des nouvelles lignes à un block jusqu'à ce qu'il sera 70% rempli. En revanche, si l'on dispose d'une table qui ne subit que des insertions, il est important de laisser PCTFREE à 0, vu que l'on ne veut pas réserver de la place pour les updates. 
+
+Avec la valeur de BLOCK_SIZE, PCTFREE peut avoir une grande influence sur la taille finale de la table.
+
+Comme on a pas spécifié une taille de block lors de la création du tablespace GARES\_TS, c'est la valeur par défaut qui y sera attribuée : 
+```
+SQL> SELECT value FROM v$parameter WHERE name = 'db_block_size';
+```
+VALUE|
+-----|
+8192|
+
+Donc la taille de la table après 100k insertions de 8M est en effet la taille de block multipliée par le nombre de blocks :
+
+1000 * 8K = 8M
 
 ## 9.1 Scénario "modifications"
 
