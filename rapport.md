@@ -495,7 +495,7 @@ Sortie :
 Ci-dessous la [requête][4] pour afficher les informations de stockage de la table :
 
 ```
-variable unf number;
+variable unf number; -- Total number of unformated blocks
 variable unfb number;
 variable fs1 number; -- Number of blocks having at least 0 to 25% free space 
 variable fs1b number;
@@ -539,7 +539,7 @@ UNF | UNFB | FS4 | FS4B | FS3 | FS3B  | FS2 | FS2B | FS1 | FS1B | FULL | FULLB
 ----|------|-----|------|-----|-------|-----|------|-----|------|------|------
 0   |0     |52   |425984|894  |7323648|0    |0     |0    |0     |54    |442368
 
-On constate que le nombre total des blocks alloués à la table GARES est 1000 (52 + 894 + 54) dont la plupart ont entre 50% et 75% d'espaces libres (FS3).
+On constate que le nombre total des blocks alloués à la table GARES est 1000 (52 + 894 + 54) dont la plupart ont entre 50% et 75% d'espaces libres (FS3). On remarque également que même si l'on a bien urilisé une valeur de 30% pour PCTFREE, 54 blocks sont entièrement remplis. 
 
 \- **Faites un rappel des paramètres de stockage importants utilisés dans cette opération, au niveau du tablespace, segment, extents, blocs.**
 
@@ -620,15 +620,34 @@ Sortie :
 On constate que :
 
 * La taille de la table n'a pas diminué même si l'on a supprimé la moitié des lignes.
+* Tous les blocks sont utilisés.
 * Le nombre de blocks entièrement remplis a augmenté après les updates suite à l'exploitation de l'espace libre que l'on a gardé grâce à l'utilisation de PCTFREE.
 
-Proposer, el les expliquant, des scénarios d'am&liorations de l'espace de stockage de la table GARES :
+Proposer, en les expliquant, des scénarios d'améliorations de l'espace de stockage de la table GARES :
 
 ....
 
 Faire un export/import de la table vers une nouvelle table, refaire l'analyse de cette table pour voir les améliorations :
 
+Nous avons utilisé l'outil 'Oracle SQL Developer' pour créer une nouvelle table appelée 'GARES\_EXPORT\_IMPORT'.
 
+Sortie de la requête dbms\_space.space\_usage :
+
+UNF   | UNFB     | FS4  | FS4B     | FS3   | FS3B| FS2   | FS2B      | FS1 | FS1B | FULL  | FULLB 
+------|----------|------|----------|-------|-----|-------|-----------|-----|------|-------|------
+**48**|**393216**|**51**|**417792**|**0**  |**0**|**1**  |**8192**   |0    |0     |**648**|**5308416**
+
+Taille de la table après les modifications :
+
+```
+SELECT bytes/1024/1024 FROM DBA_SEGMENTS WHERE SEGMENT_NAME='GARES_EXPORT_IMPORT';
+```
+
+Sortie :
+
+6 Mb
+
+En effet, la nouvelle table fraîchement créée à partie d'un export de la table GARES est 25% plus petite en taille avec seulement 748 blocks utilisés (48 + 51 + 1 + 648). Par contre, 65% des blocks sont entièrement remplis même avec une valeur PCTFREE de 30%.
 
 [1]: http://docs.oracle.com/cd/E18283_01/server.112/e17120/create006.htm#i1010047
 [2]: https://docs.oracle.com/cd/B28359_01/server.111/b28320/initparams250.htm
