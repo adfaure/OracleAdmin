@@ -746,7 +746,11 @@ VALUE|
 8 Mb |
 
 ## Conclusion :
+Quand on crée un tablespace en mode "gestion locale", on peut choisir entre deux méthodes pour l'allocation des extents.
 
+* AUTOALLOCATE - Ici, Oracle prend en charge la gestion des tailles des extents.
+
+* UNIFORM - Ici, l'allocation des extents dans le tablespace est gérée d'une manière uniforme avec une taille fixe. L'utilisation des extents uniformes minimise généralement les fragmentations et améliore les performances.
 
 [1]: http://docs.oracle.com/cd/E18283_01/server.112/e17120/create006.htm#i1010047
 [2]: https://docs.oracle.com/cd/B28359_01/server.111/b28320/initparams250.htm
