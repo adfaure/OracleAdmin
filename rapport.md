@@ -598,6 +598,26 @@ for line in sys.stdin:
 print "commit;"
 ```
 
+Refaire une analyse de la table après ces opération :
+
+Sortie de la requête dbms\_space.space\_usage :
+
+UNF | UNFB | FS4 | FS4B | FS3 | FS3B  | FS2 | FS2B | FS1 | FS1B | FULL | FULLB 
+----|------|-----|------|-----|-------|-----|------|-----|------|------|------
+0   |0     |52   |425984|894  |7323648|0    |0     |0    |0     |54    |442368
+
+Informations depuis 'DBA_TABLES' :
+
+```
+SQL> SELECT NUM_ROWS, BLOCKS, EMPTY_BLOCKS, AVG_SPACE, AVG_ROW_LEN FROM DBA_TABLES WHERE TABLE_NAME = 'GARES';
+```
+
+NUM_ROWS | BLOCKS | EMPTY_BLOCKS | AVG_SPACE | AVG_ROW_LEN
+----|------|-----|------|-----
+100000 | 1000 | 24 | 4815 | 49
+
+On constate que le nombre total des blocks alloués à la table GARES est 1000 dont la plupart ont entre 50% et 75% d'espaces libres (FS3).
+
 [1]: http://docs.oracle.com/cd/E18283_01/server.112/e17120/create006.htm#i1010047
 [2]: https://docs.oracle.com/cd/B28359_01/server.111/b28320/initparams250.htm
 [3]: https://docs.oracle.com/cd/B28359_01/appdev.111/b28419/d_space.htm#i1003180
